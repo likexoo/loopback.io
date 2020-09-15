@@ -1,65 +1,67 @@
 ---
-lang: en
+lang: zh
 title: 'Binding'
 keywords: LoopBack 4.0, LoopBack 4, Node.js, TypeScript, OpenAPI
 sidebar: lb4_sidebar
-permalink: /doc/en/lb4/Binding.html
+permalink: /doc/zh/lb4/Binding.html
 ---
 
-## What is Binding?
+## 什么是`Binding`?
 
-`Binding` represents items within a [Context](Context.md) instance. A binding
-connects its value to a unique key as the address to access the entry in a
-context.
+> Binding译为“绑定”，下略。
 
-### Attributes of a binding
+`Binding`可以在一个实例化后的[`Context（上下文）`](Context.md)中作为一个或多个对象的代表。一个`Binding`使用一个不重复的键作为地址，在`Context`中可以通过此地址获取到`Binding`所对应的值。
 
-A binding typically has the following attributes:
+### `Binding`的属性
 
-- key: Each binding has a `key` to uniquely identify itself within the context
-- scope: The scope controls how the binding value is created and cached within
-  the context
-- tags: Tags are names or name/value pairs to describe or annotate a binding
-- value: Each binding must be configured with a type of value provider so that
-  it can be resolved to a constant or calculated value
+一个`Binding`通常拥有以下属性：
+
+- key（键）: 在上下文中，每个`Binding`都有一个用于标记自己的唯一键；
+- scope（范围）: 在上下文中，用来控制如何创建或缓存`Binding`的值；
+- tags（标签）: 可以是`名称`字符串或`名称-值`键值对，用来描述或注释一个`Binding`；
+- value（值）: 每个`Binding`必须设置一个可以解析出绑定的值的提供装置（比如，类、方法、常量等），这样`Binding`才可以被解析成一个常量或动态值；
 
 ![Binding](imgs/binding.png)
 
-## How to create a binding?
+## 如何创建一个`Binding`？
 
-There are a few ways to create a binding:
+有几种方式可以创建一个`Binding`：
 
-- Use `Binding` constructor:
+- 使用`Binding`类的构造器
 
   ```ts
   import {Context, Binding} from '@loopback/core';
+  // 实例化一个上下文
   const context = new Context();
+  // 实例化一个绑定，并将其'key'属性设置为'my-key'
   const binding = new Binding('my-key');
+  // 将绑定添加至上下文中
   ctx.add(binding);
   ```
 
-- Use `Binding.bind()`
+- 使用`Binding`类的`.bind()`静态方法
 
   ```ts
   import {Context, Binding} from '@loopback/core';
+  // 实例化一个上下文
   const context = new Context();
+  // 实例化一个绑定，并将其'key'属性设置为'my-key'
   const binding = Binding.bind('my-key');
+  // 将绑定添加至上下文中
   ctx.add(binding);
   ```
 
-- Use `context.bind()`
+- 使用`Context`类的`.bind()`方法
 
   ```ts
   import {Context, Binding} from '@loopback/core';
+  // 实例化一个上下文
   const context = new Context();
+  // 在上下文中添加一个绑定，并将其'key'属性设置为'my-key'
   context.bind('my-key');
   ```
 
-  {% include note.html content="The `@loopback/core` package re-exports all
-  public APIs of `@loopback/context`. For consistency, we recommend the usage of
-  `@loopback/core` for imports in LoopBack modules and applications unless they
-  depend on `@loopback/context` explicitly. The two statements below are
-  equivalent:
+  {% include note.html content="`@loopback/core`包会重复导出所有关于`@loopback/context`的公共API。为了保持写法上的一致，我们推荐使用`@loopback/core`包进行各种对象的引用，除非某个对象需要通过`@loopback/context`包显式引用. 下面的2行代码在作用上是相等的：
 
   ```ts
   import {inject} from '@loopback/context';
@@ -68,30 +70,29 @@ There are a few ways to create a binding:
 
   " %}
 
-## How to set up a binding?
+## 如何设置一个`Binding`?
 
-The `Binding` class provides a set of fluent APIs to create and configure a
-binding.
+`Binding`类通过一套流畅的API提供了有关`Binding`的创建和配置的操作。
 
-### Supply the value or a way to resolve the value
+### 解析一个绑定的值的形式
 
-The value can be supplied in one the following forms:
+绑定可以通过多种形式以解析出一个具体的值。具体如下：
 
-#### A constant
+#### 常量形式（Constant）
 
-If binding is always resolved to a fixed value, we can bind it to a constant,
-which can be a string, a function, an object, an array, or any other types.
+适用场景：在解析一个绑定时，绑定的值是一个固定的值。<br/>
+比如，绑定的值是一个字符串（String）、一个方法（Function）、一个对象（Object）、一个数组（Array）或者任何其他类型的值。
 
 ```ts
 binding.to('my-value');
 ```
 
-Please note the constant value cannot be a `Promise` to avoid confusions.
+请注意，在常量形式下为了避免混淆，值的类型不能是`Promise`。
 
-#### A factory function
+#### 工厂形式（Factory Function）
 
-Sometimes the value needs to be dynamically calculated, such as the current time
-or a value fetched from a remote service or database.
+适用场景：在解析一个绑定时，绑定的值是需要被动态计算的。<br/>
+比如，绑定的值是当前系统时间、绑定的值是远程接口的返回值、绑定的值是远程数据库的数据等。
 
 ```ts
 binding.toDynamicValue(() => 'my-value');
@@ -99,13 +100,12 @@ binding.toDynamicValue(() => new Date());
 binding.toDynamicValue(() => Promise.resolve('my-value'));
 ```
 
-The factory function can receive extra information about the context, binding,
-and resolution options.
+工厂方法可以接收一个涵盖了上下文信息、绑定信息和解析选项信息的参数。
 
 ```ts
 import {ValueFactory} from '@loopback/core';
 
-// The factory function now have access extra metadata about the resolution
+// 现在可以通过工厂方法的第一个传参获取到解析时的相关信息了
 const factory: ValueFactory<string> = resolutionCtx => {
   return `Hello, ${resolutionCtx.context.name}#${
     resolutionCtx.binding.key
@@ -113,9 +113,8 @@ const factory: ValueFactory<string> = resolutionCtx => {
 };
 const b = ctx.bind('msg').toDynamicValue(factory);
 ```
-
-Object destructuring can be used to further simplify a value factory function
-that needs to access `context`, `binding`, or `options`.
+通过[ 解构赋值（Destructuring assignment）](https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Operators/Destructuring_assignment)
+可以进一步简化并快速访问到`context`、`binding`和`options`等对象。 
 
 ```ts
 const factory: ValueFactory<string> = ({context, binding, options}) => {
@@ -125,8 +124,7 @@ const factory: ValueFactory<string> = ({context, binding, options}) => {
 };
 ```
 
-An advanced form of value factory is a class that has a static `value` method
-that allows parameter injection.
+进阶用法：使用内置了静态方法`value`的类，该静态方法允许参数注入。（具体见`提供器形式（Provider）`）
 
 ```ts
 import {inject} from '@loopback/core';
@@ -140,11 +138,10 @@ class GreetingProvider {
 const b = ctx.bind('msg').toDynamicValue(GreetingProvider);
 ```
 
-#### A class
+#### 类形式（Class）
 
-The binding can represent an instance of a class, for example, a controller. A
-class can be used to instantiate an instance as the resolved value. Dependency
-injection is often leveraged for its members.
+适用场景：在解析一个绑定时，绑定的值是一个类的实例化对象。<br/>
+比如，控制器（Controller）等。绑定的值可以是一个被实例化的类。依赖注入通常用于影响被注入依赖的类的内部成员对象身上。
 
 ```ts
 class MyController {
@@ -156,11 +153,10 @@ class MyController {
 binding.toClass(MyController);
 ```
 
-#### A provider
+#### 提供器形式（Provider）
 
-A provider is a class with `value()` method to calculate the value from its
-instance. The main reason to use a provider class is to leverage dependency
-injection for the factory function.
+适用场景：在解析一个绑定时，用于解析绑定的值的工厂方法需要用到依赖注入（Dependency Injection）。<br/>
+提供器指的是，内置了`value()`方法的类，该方法可以在实例化后用来解析绑定的值。
 
 ```ts
 class MyValueProvider implements Provider<string> {
@@ -176,659 +172,21 @@ class MyValueProvider implements Provider<string> {
 binding.toProvider(MyValueProvider);
 ```
 
-The provider class serves as the wrapper to declare dependency injections. If
-dependency is not needed, `toDynamicValue` can be used instead.
+提供器被当做一个内置了依赖注入功能的空壳，可以理解为是一个进阶版本的工厂方法。如果工厂方法没有使用到依赖注入，则直接使用普通的工厂方法和`toDynamicValue()`方法即可。
 
-#### An alias
+#### 同族形式（Alias）
 
-An alias is the key with optional path to resolve the value from another
-binding. For example, if we want to get options from RestServer for the API
-explorer, we can configure the `apiExplorer.options` to be resolved from
-`servers.RestServer.options#apiExplorer`.
+适用场景：在解析一个绑定时，此绑定的值的来源是另外一个绑定的值。<br/>
+同族指的是，一个允许携带可选路径的键值，这个键值可以用来从另外一个绑定上解析出值。
+比如，我们在设置`Api Explorer（API浏览页面）`的时候，需要用到`RestServer`对象的相关属性，我们可以创建一个绑定并将这个绑定通过`.toAlias()`方法设置为`key`为`servers.RestServer.options#apiExplorer`的绑定的同族。
 
 ```ts
+// 创建`key`为`servers.RestServer.options`的绑定
 ctx.bind('servers.RestServer.options').to({apiExplorer: {path: '/explorer'}});
+// 创建`key`为`apiExplorer.options`的绑定
 ctx
   .bind('apiExplorer.options')
+// 声明此绑定是`key`为`servers.RestServer.options`的绑定的同族
   .toAlias('servers.RestServer.options#apiExplorer');
 const apiExplorerOptions = await ctx.get('apiExplorer.options'); // => {path: '/explorer'}
-```
-
-### Configure the scope
-
-A binding provides values for requests such as `ctx.get()`, `ctx.getSync()`, and
-dependency injections. The binding scope controls whether a binding returns a
-new value or share the same value for multiple requests within the same context
-hierarchy. For example, `value1` and `value2` in the code below can be different
-or the same depending on the scope of Binding(`my-key`).
-
-```ts
-const value1 = await ctx.get('my-key');
-const value2 = ctx.getSync('my-key');
-```
-
-We allow a binding to be resolved within a context using one of the following
-scopes:
-
-- BindingScope.TRANSIENT (default)
-- BindingScope.CONTEXT
-- BindingScope.SINGLETON
-
-For a complete list of descriptions, please see
-[BindingScope](https://loopback.io/doc/en/lb4/apidocs.context.bindingscope.html).
-
-```ts
-binding.inScope(BindingScope.SINGLETON);
-```
-
-The binding scope can be accessed via `binding.scope`.
-
-### Choose the right scope
-
-The binding scope should be determined by answers to the following questions:
-
-1. Do you need to have a new value from the binding for each request?
-2. Does the resolved value for a binding hold or access states that are request
-   specific?
-
-Please note that the binding scope has no effect on bindings created with
-`to()`. For example:
-
-```ts
-ctx.bind('my-name').to('John Smith');
-```
-
-The `my-name` binding will always resolve to `'John Smith'`.
-
-The binding scope will impact values provided by `toDynamicValue`, `toClass`,
-and `toProvider`.
-
-Let's say we need to have a binding that gives us the current date.
-
-```ts
-ctx.bind('current-date').toDynamicValue(() => new Date());
-const d1 = ctx.getSync('current-date');
-const d2 = ctx.getSync('current-date');
-// d1 !== d2
-```
-
-By default, the binding scope is `TRANSIENT`. In the code above, `d1` and `d2`
-are resolved by calling `new Date()` for each `getSync('current-date')`. Two
-different dates are assigned to `d1` and `d2` to reflect the corresponding date
-for each resolution.
-
-Now you can guess the code snippet below will produce the same date for `d1` and
-`d2`, which is not desirable.
-
-```ts
-ctx
-  .bind('current-date')
-  .toDynamicValue(() => new Date())
-  .inScope(BindingScope.SINGLETON);
-const d1 = ctx.getSync<Date>('current-date');
-const d2 = ctx.getSync<Date>('current-date');
-// d1 === d2
-```
-
-The `SINGLETON` scope is useful for some use cases, such as:
-
-1.  Share states in a single instance across multiple consumers of the binding
-
-    ```ts
-    export class GlobalCounter {
-      public count = 0;
-    }
-
-    ctx
-      .bind('global-counter')
-      .toClass(GlobalCounter)
-      .inScope(BindingScope.SINGLETON);
-    const c1: GlobalCounter = await ctx.get('global-counter');
-    c1.count++; // c1.count is now 1
-    const c2: GlobalCounter = await ctx.get('global-counter');
-    // c2 is the same instance as c1
-    // c2.count is 1 too
-    ```
-
-2.  Prevent creation of multiple instances if one single instance can be shared
-    as the consumers do not need to hold or access different states
-
-    For example, the following `GreetingController` implementation does not
-    access any information beyond the method parameters which are passed in as
-    arguments. A shared instance of `GreetingController` can invoke `greet` with
-    different arguments, such as `c1.greet('John')` and `c1.greet('Jane')`.
-
-    ```ts
-    // Mark the controller class a candidate for singleton binding
-    @bind({scope: BindingScope.SINGLETON})
-    export class GreetingController {
-      greet(name: string) {
-        return `Hello, ${name}`;
-      }
-    }
-    ```
-
-    `GreetingController` is a good candidate to use `SINGLETON` so that only one
-    instance is created within the application context and it can be shared by
-    all requests. The scope eliminates the overhead to instantiate
-    `GreetingController` per request.
-
-    ```ts
-    // createBindingFromClass() respects `@bind` and sets the binding scope to `SINGLETON'
-    const binding = ctx.add(createBindingFromClass(GreetingController));
-    const c1 = ctx.getSync(binding.key);
-    const c2 = ctx.getSync(binding.key);
-    // c2 is the same instance as c1
-    c1.greet('John'); // invoke c1.greet for 'John' => 'Hello, John'
-    c2.greet('Jane'); // invoke c2.greet for 'Jane' => 'Hello, Jane'
-    ```
-
-**Rule of thumb**: Use `TRANSIENT` as the safe default and choose `SINGLETON` if
-you want to share the same instance for all consumers without breaking
-concurrent requests.
-
-Let's look at another use case that we need to access the information from the
-current request, such as http url or logged in user:
-
-```ts
-export class GreetingCurrentUserController {
-  @inject(SecurityBindings.USER)
-  private currentUserProfile: UserProfile;
-
-  greet() {
-    return `Hello, ${this.currentUserProfile.name}`;
-  }
-}
-```
-
-Instances of `GreetingCurrentUserController` depend on `currentUserProfile`,
-which is injected as a property. We have to use `TRANSIENT` scope so that a new
-instance is created per request to hold the logged in user for each request.
-
-The constraint of being transient can be lifted by using method parameter
-injection to move the request-specific injection to parameters per method
-invocation.
-
-```ts
-export class SingletonGreetingCurrentUserController {
-  greet(@inject(SecurityBindings.USER) currentUserProfile: UserProfile) {
-    return `Hello, ${this.currentUserProfile.name}`;
-  }
-}
-```
-
-The new implementation above does not hold request specific states as properties
-in its instances anymore and thus it's qualified to be in `SINGLETON` scope.
-
-```ts
-ctx
-  .bind('controllers.SingletonGreetingCurrentUserController')
-  .toClass(SingletonGreetingCurrentUserController)
-  .inScope(BindingScope.SINGLETON);
-```
-
-A single instance of `SingletonGreetingCurrentUserController` is created within
-the context that contains the binding. But the `greet` method can still be
-invoked with different request contexts, each of which has its own logged in
-user. Method parameter injections are fulfilled with the request context, which
-can be different from the context (such as `application`) used to instantiate
-the class as a singleton.
-
-{% include note.html content="
-To understand the difference between `@bind()` and `ctx.bind()`, see
-[Configure binding attributes for a class](#configure-binding-attributes-for-a-class).
-" %}
-
-### Refresh a binding with SINGLETON or CONTEXT scope
-
-`SINGLETON` and `CONTEXT` scopes can be used to minimize the number of value
-instances created for a given binding. But sometimes we would like to force
-reloading of a binding when its configuration or dependencies are changed. For
-example, a logging provider can be refreshed to pick up a new logging level. The
-same functionality can be achieved with `TRANSIENT` scope but with much more
-overhead.
-
-The `binding.refresh()` method invalidates the cache so that its value will be
-reloaded next time.
-
-**WARNING: The state held in the cached value will be gone.**
-
-```ts
-let logLevel = 1; // 'info'
-
-// Logging configuration
-export interface LoggingOptions {
-  level: number;
-}
-
-// A simple logger
-export class Logger {
-  constructor(@config() private options: LoggingOptions) {}
-
-  log(level: string, message: string) {
-    if (this.options.level >= level) {
-      console.log('[%d] %s', level, message);
-    }
-  }
-}
-
-// Bind the logger
-const binding = ctx
-  .bind('logger')
-  .toClass(Logger)
-  .inScope(BindingScope.SINGLETON);
-
-// Start with `info` level logging
-ctx.configure(binding.key).to({level: 1});
-const logger = await ctx.get<Logger>('logger');
-logger.log(1, 'info message'); // Prints to console
-logger.log(5, 'debug message'); // Does not print to console
-
-// Now change the configuration to enable debugging
-ctx.configure(binding.key).to({level: 5});
-// Force a refresh on the binding
-binding.refresh(ctx);
-
-const newLogger = await ctx.get<Logger>('logger');
-newLogger.log(1, 'info message'); // Prints to console
-newLogger.log(5, 'debug message'); // Prints to console too!
-```
-
-### Describe tags
-
-Tags can be used to annotate bindings so that they can be grouped or searched.
-For example, we can tag a binding as a `controller` or `repository`. The tags
-are often introduced by an extension point to mark its extensions contributed by
-other components.
-
-There are two types of tags:
-
-- Simple tag - a tag string, such as `'controller'`
-- Value tag - a name/value pair, such as `{name: 'MyController'}`
-
-Internally, we use the tag name as its value for simple tags, for example,
-`{controller: 'controller'}`.
-
-```ts
-binding.tag('controller');
-binding.tag('controller', {name: 'MyController'});
-```
-
-The binding tags can be accessed via `binding.tagMap` or `binding.tagNames`.
-
-Binding tags play an import role in discovering artifacts with matching tags.
-The `filterByTag` helper function and `context.findByTag` method can be used to
-match/find bindings by tag. The search criteria can be one of the followings:
-
-1. A tag name, such as `controller`
-2. A tag name wildcard or regular expression, such as `controller.*` or
-   `/controller/`
-3. An object contains tag name/value pairs, such as
-   `{name: 'my-controller', type: 'controller'}`. In addition to exact match,
-   the value for a tag name can be a function that determines if a given tag
-   value matches. For example,
-
-   ```ts
-   import {
-     ANY_TAG_VALUE, // Match any value if it exists
-     filterByTag,
-     includesTagValue, // Match tag value as an array that includes the item
-     TagValueMatcher,
-   } from '@loopback/core';
-   // Match a binding with a named service
-   ctx.find(filterByTag({name: ANY_TAG_VALUE, service: 'service'}));
-
-   // Match a binding as an extension for `my-extension-point`
-   ctx.find(
-     filterByTag({extensionFor: includesTagValue('my-extension-point')}),
-   );
-
-   // Match a binding with weight > 100
-   const weightMatcher: TagValueMatcher = tagValue => tagValue > 100;
-   ctx.find(filterByTag({weight: weightMatcher}));
-   ```
-
-### Chain multiple steps
-
-The `Binding` fluent APIs allow us to chain multiple steps as follows:
-
-```ts
-context.bind('my-key').to('my-value').tag('my-tag');
-```
-
-### Apply a template function
-
-It's common that we want to configure certain bindings with the same attributes
-such as tags and scope. To allow such setting, use `binding.apply()`:
-
-```ts
-export const serverTemplate = (binding: Binding) =>
-  binding.inScope(BindingScope.SINGLETON).tag('server');
-```
-
-```ts
-const serverBinding = new Binding<RestServer>('servers.RestServer1');
-serverBinding.apply(serverTemplate);
-```
-
-### Configure binding attributes for a class
-
-Classes can be discovered and bound to the application context during `boot`. In
-addition to conventions, it's often desirable to allow certain binding
-attributes, such as scope and tags, to be specified as metadata for the class.
-When the class is bound, these attributes are honored to create a binding. You
-can use `@bind` decorator to configure how to bind a class.
-
-```ts
-import {bind, BindingScope} from '@loopback/core';
-
-// @bind() accepts scope and tags
-@bind({
-  scope: BindingScope.SINGLETON,
-  tags: ['service'],
-})
-export class MyService {}
-
-// @binding.provider is a shortcut for a provider class
-@bind.provider({
-  tags: {
-    key: 'my-date-provider',
-  },
-})
-export class MyDateProvider implements Provider<Date> {
-  value() {
-    return new Date();
-  }
-}
-
-@bind({
-  tags: ['controller', {name: 'my-controller'}],
-})
-export class MyController {}
-
-// @bind() can take one or more binding template functions
-@bind(binding => binding.tag('controller', {name: 'your-controller'})
-export class YourController {}
-```
-
-Then a binding can be created by inspecting the class,
-
-```ts
-import {createBindingFromClass} from '@loopback/core';
-
-const ctx = new Context();
-const binding = createBindingFromClass(MyService);
-ctx.add(binding);
-```
-
-Please note `createBindingFromClass` also accepts an optional `options`
-parameter of `BindingFromClassOptions` type with the following settings:
-
-- key: Binding key, such as `controllers.MyController`
-- type: Artifact type, such as `server`, `controller`, `repository` or `service`
-- name: Artifact name, such as `my-rest-server` and `my-controller`, default to
-  the name of the bound class
-- namespace: Namespace for the binding key, such as `servers` and `controllers`.
-  If `key` does not exist, its value is calculated as `<namespace>.<name>`.
-- typeNamespaceMapping: Mapping artifact type to binding key namespaces, such
-  as:
-
-  ```ts
-  {
-    controller: 'controllers',
-    repository: 'repositories'
-  }
-  ```
-
-- defaultNamespace: Default namespace if namespace or namespace tag does not
-  exist
-- defaultScope: Default scope if the binding does not have an explicit scope
-  set. The `scope` from `@bind` of the bound class takes precedence.
-
-{% include note.html content=" The `@bind` decorator only adds metadata to the
-class. It does NOT automatically bind the class to a context. To bind a class
-with `@bind` decoration, the following step needs to happen explicitly or
-implicitly by a [booter](Booting-an-Application.md#booters).
-
-```ts
-const binding = createBindingFromClass(AClassOrProviderWithBindDecoration);
-ctx.add(binding);
-```
-
-The metadata added by `@bind` is **NOT** inspected/honored by `toClass` or
-`toProvider`. Be warned that the example below does NOT set up the binding per
-`@bind` decoration:
-
-```ts
-const binding = ctx.bind('my-key').toClass(MyService);
-// The binding is NOT configured based on the `@bind` decoration on MyService.
-// The scope is BindingScope.TRANSIENT (not BindingScope.SINGLETON).
-// There is no tag named 'service' for the binding either.
-```
-
-" %}
-
-The `createBindingFromClass` can be used for three kinds of classes as the value
-provider for bindings.
-
-1. The class for `toClass()`
-
-   ```ts
-   @bind({tags: {greeting: 'a'}})
-   class Greeter {
-     constructor(@inject('currentUser') private user: string) {}
-
-     greet() {
-       return `Hello, ${this.user}`;
-     }
-   }
-
-   // toClass() is used internally
-   // A tag `{type: 'class'}` is added
-   const binding = createBindingFromClass(Greeter);
-   ctx.add(binding);
-   ```
-
-2. The class for `toProvider()`
-
-```ts
-@bind({tags: {greeting: 'b'}})
-class GreetingProvider implements Provider<string> {
-  constructor(@inject('currentUser') private user: string) {}
-
-  value() {
-    return `Hello, ${this.user}`;
-  }
-}
-
-// toProvider() is used internally
-// A tag `{type: 'provider'}` is added
-const binding = createBindingFromClass(GreetingProvider);
-ctx.add(binding);
-```
-
-3. The class for `toDynamicValue()`
-
-```ts
-@bind({tags: {greeting: 'c'}})
-class DynamicGreetingProvider {
-  static value(@inject('currentUser') user: string) {
-    return `Hello, ${this.user}`;
-  }
-}
-
-// toDynamicValue() is used internally
-// A tag `{type: 'dynamicValueProvider'}` is added
-const binding = createBindingFromClass(GreetingProvider);
-ctx.add(binding);
-```
-
-The `@bind` is optional for such classes. But it's usually there to provide
-additional metadata such as scope and tags for the binding. Without `@bind`,
-`createFromClass` simply calls underlying `toClass`, `toProvider`, or
-`toDynamicValue` based on the class signature.
-
-#### When to call createBindingFromClass
-
-Classes that are placed in specific directories such as : `src/datasources`,
-`src/controllers`, `src/services`, `src/repositories`, `src/observers`,
-`src/interceptors`, etc are automatically registered by
-[the boot process](Booting-an-Application.md), and so it is **not** necessary to
-call
-
-```ts
-const binding = createBindingFromClass(AClassOrProviderWithBindDecoration);
-ctx.add(binding);
-```
-
-in your application.
-
-If, on the other hand, your classes are placed in different directories expected
-by the boot process, then it is necessary to call the code above in your
-application.
-
-##### How the Boot Process Calls createBindingFromClass for you
-
-A default LoopBack 4 application uses
-[BootMixin](Booting-an-Application.md#bootmixin) which loads the
-[BootComponent](Booting-an-Application.md#bootcomponent). It declares the main
-[booters](https://github.com/strongloop/loopback-next/blob/a81ce7e1193f7408d30d984d0c3ddcec74f7c316/packages/boot/src/boot.component.ts#L29)
-for an application : application metadata, controllers, repositories, services,
-datasources, lifecycle observers, interceptors, and model api. The
-[ControllerBooter](https://github.com/strongloop/loopback-next/blob/a81ce7e1193f7408d30d984d0c3ddcec74f7c316/packages/boot/src/booters/controller.booter.ts#L23),
-for example, calls `this.app.controller(controllerClass)` for every controller
-class discovered in the `controllers` folder. This
-[method](https://github.com/strongloop/loopback-next/blob/da9a7e72b12ebb9250214b92dc20a268a8bb7e95/packages/core/src/application.ts#L124)
-does all the work for you; as shown below:
-
-{% include code-caption.html content="loopback-next/packages/core/src/application.ts" %}
-
-```ts
-  controller(controllerCtor: ControllerClass, name?: string): Binding {
-    debug('Adding controller %s', name ?? controllerCtor.name);
-    const binding = createBindingFromClass(controllerCtor, {
-      name,
-      namespace: CoreBindings.CONTROLLERS,
-      type: CoreTags.CONTROLLER,
-      defaultScope: BindingScope.TRANSIENT,
-    });
-    this.add(binding);
-    return binding;
-  }
-```
-
-### Encoding value types in binding keys
-
-String keys for bindings do not help enforce the value type. Consider the
-example from the previous section:
-
-```ts
-app.bind('hello').to('world');
-console.log(app.getSync<string>('hello'));
-```
-
-The code obtaining the bound value is explicitly specifying the type of this
-value. Such solution is far from ideal:
-
-1.  Consumers have to know the exact name of the type that's associated with
-    each binding key and also where to import it from.
-2.  Consumers must explicitly provide this type to the compiler when calling
-    ctx.get in order to benefit from compile-type checks.
-3.  It's easy to accidentally provide a wrong type when retrieving the value and
-    get a false sense of security.
-
-The third point is important because the bugs can be subtle and difficult to
-spot.
-
-Consider the following REST binding key:
-
-```ts
-export const HOST = 'rest.host';
-```
-
-The binding key does not provide any indication that `undefined` is a valid
-value for the HOST binding. Without that knowledge, one could write the
-following code and get it accepted by TypeScript compiler, only to learn at
-runtime that HOST may be also undefined and the code needs to find the server's
-host name using a different way.:
-
-```ts
-const resolve = promisify(dns.resolve);
-
-const host = await ctx.get<string>(RestBindings.HOST);
-const records = await resolve(host);
-// etc.
-```
-
-To address this problem, LoopBack provides a templated wrapper class allowing
-binding keys to encode the value type too. The `HOST` binding described above
-can be defined as follows:
-
-```ts
-export const HOST = new BindingKey<string | undefined>('rest.host');
-```
-
-Context methods like `.get()` and `.getSync()` understand this wrapper and use
-the value type from the binding key to describe the type of the value they are
-returning themselves. This allows binding consumers to omit the expected value
-type when calling `.get()` and `.getSync()`.
-
-When we rewrite the failing snippet resolving HOST names to use the new API, the
-TypeScript compiler immediately tells us about the problem:
-
-```ts
-const host = await ctx.get(RestBindings.HOST);
-const records = await resolve(host);
-// Compiler complains:
-// - cannot convert string | undefined to string
-//  - cannot convert undefined to string
-```
-
-### Binding events
-
-A binding can emit `changed` events upon changes triggered by methods such as
-`tag`, `inScope`, `to`, and `toClass`.
-
-The binding listener function signature is described as:
-
-```ts
-/**
- * Information for a binding event
- */
-export type BindingEvent = {
-  /**
-   * Event type
-   */
-  type: string;
-  /**
-   * Source binding that emits the event
-   */
-  binding: Readonly<Binding<unknown>>;
-  /**
-   * Operation that triggers the event
-   */
-  operation: string;
-};
-
-/**
- * Event listeners for binding events
- */
-export type BindingEventListener = (
-  /**
-   * Binding event
-   */
-  event: BindingEvent,
-) => void;
-```
-
-Now we can register a binding listener to be triggered when tags are changed:
-
-```ts
-const bindingListener: BindingEventListener = ({binding, operation}) => {
-  if (event === 'tag') {
-    console.log('Binding tags for %s %j', binding.key, binding.tagMap);
-  }
-});
-
-binding.on('changed', bindingListener);
 ```
